@@ -12,8 +12,9 @@ class StaffStatsPlugin(commands.Cog):
         self.bot = bot
         self.db = bot.plugin_db.get_partition(self)
         if self.db is None:
-            print("Failed to get database partition for the plugin.")
-            return  # This will prevent the init from completing if db is None
+            print("Failed to get database partition for the plugin. Plugin will not be loaded.")
+            return  # Prevent further initialization if db is not available
+
         bot.loop.create_task(self._update_stats())
 
     async def _update_stats(self):
@@ -96,5 +97,8 @@ class StaffStatsPlugin(commands.Cog):
         await ctx.send("Done.")
         return
 
-def setup(bot):
-    bot.add_cog(StaffStatsPlugin(bot))
+async def setup(bot):
+    try:
+        await bot.add_cog(StaffStatsPlugin(bot))
+    except Exception as e:
+        print(f"Failed to load StaffStatsPlugin: {str(e)}")

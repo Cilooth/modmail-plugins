@@ -8,13 +8,15 @@ class StaffStatsPlugin(commands.Cog):
     Just a plugin which saves staff statistics in the database for frontend stuff.
     """
 
-    def __init__(self, bot):
-        self.bot = bot
-        self.db = bot.plugin_db.get_partition(self)
-        if not self.db:
-            print("Failed to get database partition for the plugin.")
-            return  # This will prevent the init from completing and the task from being created if db is None
-        bot.loop.create_task(self._update_stats())
+def __init__(self, bot):
+    self.bot = bot
+    self.db = bot.plugin_db.get_partition(self)
+    # Replace the boolean check with a comparison to None if needed
+    if self.db is None:
+        print("Failed to get database partition for the plugin.")
+        return  # This will prevent the init from completing and the task from being created if db is None
+    bot.loop.create_task(self._update_stats())
+
 
     async def _update_stats(self):
         while True:

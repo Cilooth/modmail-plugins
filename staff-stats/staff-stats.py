@@ -11,18 +11,23 @@ class StaffStatsPlugin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.db = bot.plugin_db.get_partition(self)
+        if not self.db:
+            print("Failed to get database partition for the plugin.")
+            return  # This will prevent the init from completing and the task from being created if db is None
         bot.loop.create_task(self._update_stats())
 
     async def _update_stats(self):
         while True:
             staff_list = []
             category_id = self.bot.config.get("main_category_id")
-            if category_id is None:
+            if not category_id:
+                print("No category ID specified.")
                 await asyncio.sleep(86400)
                 continue
 
             category = self.bot.get_channel(int(category_id))
-            if category is None:
+            if not category:
+                print("Category channel not found.")
                 await asyncio.sleep(86400)
                 continue
 
@@ -42,7 +47,7 @@ class StaffStatsPlugin(commands.Cog):
                         "id": member.id,
                         "closed": len(closed),
                         "responded": len(responded),
-                        "avatar": str(member.avatar_url),
+                        "avatar": str(member.avatar.url if member.avatar else ""),
                     })
 
             await self.db.find_one_and_update(
@@ -56,12 +61,12 @@ class StaffStatsPlugin(commands.Cog):
     async def syncstaff(self, ctx):
         staff_list = []
         category_id = self.bot.config.get("main_category_id")
-        if category_id is None:
+        if not category_id:
             await ctx.send("Configuration error: main category ID is missing.")
             return
 
         category = self.bot.get_channel(int(category_id))
-        if category is None:
+        if not category:
             await ctx.send("Error: The specified channel does not exist.")
             return
 
@@ -81,7 +86,7 @@ class StaffStatsPlugin(commands.Cog):
                     "id": member.id,
                     "closed": len(closed),
                     "responded": len(responded),
-                    "avatar": str(member.avatar_url),
+                    "avatar": str(member.avatar.url if member.avatar else ""),
                 })
 
         await self.db.find_one_and_update(
